@@ -1,7 +1,6 @@
 import sys, os
-import typing
 from PyQt6 import QtCore
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QLabel, QLineEdit, QTextEdit, QSplitter, QHBoxLayout, QVBoxLayout, QStatusBar)
 
@@ -18,12 +17,13 @@ def resource_path(relative_path):
   return os.path.join(base_path, relative_path)
 
 class myApp(QWidget):
-  def __init__(self):
+  def __init__(self, client):
     super().__init__()
     self.window_width, self.window_height = 700, 700
     self.setMinimumSize(self.window_width, self.window_height)
     self.setWindowTitle('Youtube Video Summarizer App')
     # self.setWindowIcon(QIcon('./icon.png'))
+    self.client = client
 
     self.layout = {}
     self.layout['main'] = QVBoxLayout()
@@ -101,7 +101,7 @@ class myApp(QWidget):
     self.statusbar.clearMessage()
 
     try:
-      video_summary = summarize_transcript(transcription)
+      video_summary = summarize_transcript(api_key_openai, transcription)
       self.summarized_field.setPlainText(video_summary)
     except Exception as e:
       # self.statusbar.showMessage(str(e))
@@ -117,12 +117,14 @@ class myApp(QWidget):
 
 if __name__ == '__main__':
   load_dotenv()
-  api_key_openai = os.getenv("api_key_openai")
-  openai.api_key = api_key_openai
+  api_key_openai = os.getenv("OPENAI_API_KEY")
+  client = OpenAI(
+    api_key = api_key_openai
+    )
   
   app = QApplication(sys.argv)
 
-  myApp = myApp()
+  myApp = myApp(client)
   myApp.show()
 
   try: 

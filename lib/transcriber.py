@@ -1,6 +1,7 @@
 import re
-import openai
+from openai import OpenAI
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
+
 
 def get_video_transcript(video_id):
   pattern = r'\[.*?\]'
@@ -9,9 +10,10 @@ def get_video_transcript(video_id):
   transcripts_string = re.sub(pattern, '', ''.join(transcripts))
   return transcripts_string
 
-def summarize_transcript(transcript):
-  prompt = 'Please summarize the transcript below into bullet points \n---\n"{0}"'.format
-  response = openai.ChatCompletion.create(
+def summarize_transcript(api_key, transcript):
+  client = OpenAI(api_key=api_key)
+  prompt = 'Please summarize the transcript below into bullet points \n---\n"{0}"'.format(transcript)
+  response = client.chat.completions.create(
       model="gpt-3.5-turbo",
       temperature=0.1,
       max_tokens=1000,
@@ -19,4 +21,4 @@ def summarize_transcript(transcript):
         {"role": "user", "content": prompt}
       ]
     )
-  return response.choices[0]['message']['content']
+  return response.choices[0].message.content
